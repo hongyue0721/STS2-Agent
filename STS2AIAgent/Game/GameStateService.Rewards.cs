@@ -118,7 +118,28 @@ internal static partial class GameStateService
         var bundleNodes = GetBundleOptions(currentScreen);
         if (bundleNodes.Count == 0)
         {
-            return null;
+            // pack-07 observability patch (NEW DESIGN, StateVersion 17): after the
+            // player clicks a bundle the game hides the NCardBundle nodes and shows
+            // the chosen bundle's card grid on the SAME screen. The old builder
+            // returned null there, so /state asserted bundles=null while the player
+            // plainly sees the cards — an observation-blind window that made
+            // legal-action inference impossible for every group. Expose the visible
+            // cards as one collapsed view. Observation only: no legality, no
+            // recovery, no behavior change.
+            var visibleCards = FindDescendants<Control>((Node)bundleScreen)
+                .Where(n => GodotObject.IsInstanceValid(n) && n.IsVisibleInTree() && n.GetType().Name == "NCard")
+                .Select(n => n.GetType().GetProperty("Model")?.GetValue(n) as CardModel)
+                .Where(cm => cm != null)
+                .Select((card, cardIndex) => BuildBundleCardPayload(card!, cardIndex))
+                .ToArray();
+            if (visibleCards.Length == 0)
+            {
+                return null;
+            }
+            return new[]
+            {
+                new BundlePayload { index = -1, view = "selected_cards", cards = visibleCards }
+            };
         }
 
         return bundleNodes.Select((bundleNode, bundleIndex) =>
@@ -135,6 +156,7 @@ internal static partial class GameStateService
             return new BundlePayload
             {
                 index = bundleIndex,
+                view = "bundles",
                 cards = cards
             };
         }).ToArray();

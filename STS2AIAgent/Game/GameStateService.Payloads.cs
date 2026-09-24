@@ -1155,6 +1155,11 @@ internal sealed class BundlePayload
 {
     public int index { get; init; }
 
+    /// <summary>NEW DESIGN (pack-07 observability, StateVersion 17): "bundles" = one entry per
+    /// selectable NCardBundle; "selected_cards" = the collapsed post-click grid (single entry,
+    /// index -1) whose cards are what the player currently sees before confirming.</summary>
+    public string view { get; init; } = "bundles";
+
     public RewardCardOptionPayload[] cards { get; init; } = Array.Empty<RewardCardOptionPayload>();
 }
 

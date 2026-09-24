@@ -74,7 +74,10 @@ namespace STS2AIAgent.Game;
 internal static partial class GameStateService
 {
 
-    private const int StateVersion = 16;
+    // 17 (research patch, pack-07): bundles gains `view` + the collapsed selected-card
+    // grid is exposed (see BuildBundlePayload). Additive only; every pre-existing field
+    // keeps its meaning. 16: upstream baseline at e11e265.
+    private const int StateVersion = 17;
 
     private static readonly TimeSpan CombatActionSnapshotStableDelay = TimeSpan.FromMilliseconds(200);
 
